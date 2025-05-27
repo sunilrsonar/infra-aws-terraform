@@ -262,8 +262,8 @@ resource "aws_launch_template" "app_template" {
     exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
     sudo apt update -y
     sudo apt install -y nginx
-    systemctl enable nginx
-    systemctl start nginx
+    sudo systemctl enable nginx
+    sudo systemctl start nginx
   EOF
   )
 
