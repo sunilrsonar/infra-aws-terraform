@@ -82,8 +82,11 @@ Once terrafom applied and infrastuctre is created, follow below process
 3. copy the hosts.ini file in jumpsever and run the below run below commands(you can able to access EC2 servers of autoscaling group as your private key is copied in jump server already)
 
 sudo apt update -y
+
 sudo apt install -y ansible
+
 chmod 600 /home/ubuntu/id_ed25519
+
 ansible-playbook /home/ubuntu/install_nginx.yml -i hosts.ini
 
 Now you can able to access Nginx default web page with public DNS
