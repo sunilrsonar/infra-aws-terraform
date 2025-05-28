@@ -79,7 +79,7 @@ Once terrafom applied and infrastuctre is created, follow below process
 
 1. Edit the hosts file with Private IP details of EC2 servers of autoscaling(you will get these details on output of terraform apply as private IPs)
 2. Login to jump server with ubuntu as user and with public IP (server is already buid with your provided public key so you can able to access)
-3. copy the hosts.ini file in jumpsever and run the below run below commands(you can able to access EC2 servers of autoscaling group as your private key is copied in jump server already)
+3. copy the hosts.ini file in jumpsever and run below commands(you can able to access EC2 servers of autoscaling group as your private key is copied in jump server already)
 
 sudo apt update -y
 
