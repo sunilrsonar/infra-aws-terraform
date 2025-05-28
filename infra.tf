@@ -202,12 +202,21 @@ resource "aws_autoscaling_group" "prod_scale" {
     id = aws_launch_template.app_template.id
     version = "$Latest"
   }
-
   tag {
     key = "Name"
     value = "app-instance"
     propagate_at_launch = true
   }
+}
+
+data "aws_instances" "asg_instance" {
+  instance_tags = {
+    Name = "app-instance"
+  }
+
+  instance_state_names = ["running"]
+
+  depends_on = [aws_autoscaling_group.prod_scale]
 }
 
 resource "aws_security_group" "app_sg" {
@@ -256,16 +265,6 @@ resource "aws_launch_template" "app_template" {
   instance_type           = "t2.micro"
   vpc_security_group_ids  = [aws_security_group.app_sg.id]
   key_name                = aws_key_pair.local_key.key_name
-
-  user_data = base64encode(<<-EOF
-    #!/bin/bash
-    exec > >(tee /var/log/user-data.log|logger -t user-data -s 2>/dev/console) 2>&1
-    sudo apt update -y
-    sudo apt install -y nginx
-    sudo systemctl enable nginx
-    sudo systemctl start nginx
-  EOF
-  )
 
   tag_specifications {
     resource_type = "instance"
@@ -334,6 +333,27 @@ resource "aws_instance" "jumpserver" {
   }
 }
 
+resource "null_resource" "copy_ansiblefileto_jump" {
+  depends_on = [ aws_instance.jumpserver ]
+
+  provisioner "file" {
+    source = "install_nginx.yml"
+    destination = "/home/ubuntu/install_nginx.yml"
+  }
+
+  provisioner "file" {
+    source = "/home/aizen-sosuke/.ssh/id_ed25519"
+    destination = "/home/ubuntu/id_ed25519"
+  }
+    
+  connection {
+    type = "ssh"
+    user = "ubuntu"
+    private_key = file("/home/aizen-sosuke/.ssh/id_ed25519")
+    host = aws_instance.jumpserver.public_ip
+  }
+}
+
 output "public_ip" {
   value = aws_instance.jumpserver.public_ip
 }
@@ -342,3 +362,6 @@ output "public_dns" {
   value = aws_lb.app_lb.dns_name
 }
 
+output "private_ips" {
+  value = data.aws_instances.asg_instance.private_ips
+}

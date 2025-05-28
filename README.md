@@ -28,6 +28,8 @@ How to Use
  ~/.ssh/id_ed25519.pub
 > Update the path in aws_key_pair resource if your key is elsewhere.
 
+Note : This is my local home directory of my laptop : /home/aizen-sosuke/(where i have these private/public keys, ansible file)
+
 2. Initialize Terraform
 terraform init
 
@@ -73,19 +75,15 @@ Outputs
 | public_ip | Public IP of the Jump Server |
 | public_dns | Public DNS of the Application LB |
 
-if you are seeing "504 badgateway" error while accessing the dns_name, then login to one of the ec2 instance of autoscaling group and check Nginx is running or not.
+Once terrafom applied and infrastuctre is created, follow below process
 
-login process:
-1. login to jumpserver you have already copied public key to this instance, so no issue
-2. copy the private key and save in one of the file in jump-server
-3. use that copied private key to login into the ec2 server of autoscaling group with private key
+1. Edit the hosts file with Private IP details of EC2 servers of autoscaling(you will get these details on output of terraform apply as private IPs)
+2. Login to jump server with ubuntu as user and with public IP (server is already buid with your provided public key so you can able to access)
+3. copy the hosts.ini file in jumpsever and run the below run below commands(you can able to access EC2 servers of autoscaling group as your private key is copied in jump server already)
 
-check ngix is running or with below command:
+sudo apt update -y
+sudo apt install -y ansible
+chmod 600 /home/ubuntu/id_ed25519
+ansible-playbook /home/ubuntu/install_nginx.yml -i hosts.ini
 
-sudo systemctl status nginx
-
-SSH into your instance, try to manually run:
-sudo apt update
-sudo apt install -y nginx
-sudo systemctl enable nginx
-sudo systemctl start nginx
+Now you can able to access Nginx default web page with public DNS
